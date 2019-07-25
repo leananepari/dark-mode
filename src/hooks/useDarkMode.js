@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useLocalStorage } from './useLocalStorage.js';
+import  useLocalStorage  from './useLocalStorage.js';
 
 export const useDarkMode = () => {
 
@@ -7,7 +7,7 @@ export const useDarkMode = () => {
 
   useEffect(() => {
     if (value === true) {
-      document.body.classList.add('dark-mode');
+      document.querySelector('body').classList.add('dark-mode');
     } else {
       document.body.classList.remove('dark-mode');
     }
