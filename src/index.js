@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import ReactDOM from "react-dom";
 import axios from "axios";
 import 'semantic-ui-css/semantic.min.css'
@@ -7,13 +7,15 @@ import 'semantic-ui-css/semantic.min.css'
 import Charts from "./components/Charts";
 import Navbar from "./components/Navbar";
 import DropdownMenu from "./components/DropdownMenu";
+import Coin from "./components/Coin";
 
 import "./styles.scss";
 
 const App = () => {
   const [coinData, setCoinData] = useState([]);
-  const [dropdownOption, setDropdownOption] = useState(false);
-  const [optionsList, setOptionsList] = useState([{key: '', text: '', value: ''}])
+  const [dropdownOption, setDropdownOption] = useState(null);
+  const [optionsList, setOptionsList] = useState([{key: '', text: '', value: ''}]);
+  const [coinsMoreInfo, setCoinsMoreInfo] = useState([])
 
   useEffect(() => {
     axios
@@ -22,19 +24,35 @@ const App = () => {
       )
       .then(res => {
         setCoinData(res.data)
+        const optionsListCopy = [...optionsList];
+
         res.data.forEach(item => {
-          optionsList.push({key: item.name, text: item.name, value: item.name});
-          setOptionsList(optionsList);
-          console.log('LIST',optionsList)
+          optionsListCopy.push({key: item.name, text: item.name, value: item.name});
         })
+        setOptionsList(optionsListCopy);
       })
       .catch(err => console.log(err));
   }, []);
+
+  useEffect(() => {
+    if (dropdownOption) {
+      axios
+      .get(
+        `https://api.coingecko.com/api/v3/coins/${dropdownOption.toLowerCase()}`
+      )
+      .then(res => {
+        setCoinsMoreInfo(res.data)
+      })
+      .catch(err => console.log(err));
+    }
+  }, [dropdownOption])
+
   return (
     <div className="App">
       <Navbar />
-      <DropdownMenu list={optionsList}/>
-      <Charts coinData={coinData} />
+      <Route path="/" render={props => <DropdownMenu {...props} list={optionsList} dropdownOption={dropdownOption} setDropdownOption={setDropdownOption}/>}/>
+      <Route path="/" exact component={() => <Charts coinData={coinData} />}/>
+      <Route path="/:coin" render={props => <Coin {...props} coinData={coinsMoreInfo} />}/>
     </div>
   );
 };
